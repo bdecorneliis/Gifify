@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="200dp">
+
+    <ImageView
+        android:id="@+id/imagen_gift"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/placeholder"
+        android:scaleType="centerCrop" />
+    <ImageView
+        android:id="@+id/gif_added_confirmation"
+        android:visibility="gone"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:src="@drawable/ic_baseline_star_24"
+        android:layout_gravity="center"/>
+
+    <ProgressBar
+        android:id="@+id/loading"
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <ImageView
+        android:id="@+id/broke"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:src="@drawable/ic_baseline_broken_image_24"
+        android:scaleType="centerCrop"
+        android:visibility="gone"
+        android:layout_gravity="center"/>
+
+</FrameLayout>
