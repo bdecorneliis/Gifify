@@ -16,6 +16,8 @@ class GifLiveData(private var context: Context,private var mGifs:MutableList<Gif
         loadData()
     }
 
+    private val gifsFiltered:MutableList<Gif> = ArrayList()
+
     private fun loadData() {
         val url = "${Constant().link}/trending?api_key=${Constant().token}&limit=30&offset=${offset}"
         val requestQueue = Volley.newRequestQueue(context)
@@ -48,4 +50,20 @@ class GifLiveData(private var context: Context,private var mGifs:MutableList<Gif
         requestQueue.add(getRequest)
 
     }
+
+    fun reset(){
+        postValue(mGifs)
+    }
+
+    fun searchText(value:String?):Boolean{
+        mGifs.forEach{
+            if(it.title!!.contains(value!!, ignoreCase = true)){
+                gifsFiltered.add(it)
+            }
+        }
+
+        postValue(gifsFiltered)
+        return true
+    }
+
 }

@@ -25,6 +25,16 @@ class GifModel(application: Application) : AndroidViewModel(application) {
         singleton!!.addPage(singleton!!.limit * ++singleton!!.offset)
     }
 
+
+    fun searchText(value:String){
+        gifsList!!.searchText(value)
+    }
+
+    fun reset(){
+        gifsList!!.reset()
+    }
+
+
     init {
         singleton = Singleton.getInstance(application,null)
         if (gifsList == null) gifsList = singleton!!.GifLiveData
