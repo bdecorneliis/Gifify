@@ -44,7 +44,6 @@ class Singleton private constructor(context: Context, view: View?) {
 
 
     companion object {
-        // Atributos
         @SuppressLint("StaticFieldLeak")
         private var singleton: Singleton? = null
         @SuppressLint("StaticFieldLeak")

@@ -11,7 +11,6 @@ import android.widget.GridView
 import androidx.appcompat.widget.SearchView
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import com.underdesign.gifify.model.Gif
 import com.underdesign.gifify.model.GifAdapter
 import com.underdesign.gifify.model.GifModel
 import kotlinx.android.synthetic.main.activity_main.*
@@ -19,14 +18,13 @@ import kotlinx.android.synthetic.main.activity_main.*
 class MainActivity : AppCompatActivity() {
     private var gifModel: GifModel? = null
     private var gridView: GridView? = null
-    private var adaptador: GifAdapter? = null
+    private var adapter: GifAdapter? = null
     private var singleton:Singleton? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
         supportActionBar!!.setDisplayShowHomeEnabled(true)
         supportActionBar!!.setLogo(R.mipmap.ic_launcher)
         supportActionBar!!.setDisplayUseLogoEnabled(true)
@@ -34,13 +32,10 @@ class MainActivity : AppCompatActivity() {
         singleton = Singleton.getInstance(application,null)
 
         gridView = findViewById<View>(R.id.grid) as GridView
-        adaptador = GifAdapter(this,true)
-        gridView!!.adapter = adaptador
-
+        adapter = GifAdapter(this,true)
+        gridView!!.adapter = adapter
 
         gifModel = ViewModelProvider(this).get(GifModel::class.java)
-
-
 
         gridView!!.setOnScrollListener(object: AbsListView.OnScrollListener {
             override fun onScroll(view: AbsListView?, firstVisibleItem: Int, visibleItemCount: Int, totalItemCount: Int) {
@@ -50,17 +45,16 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onScrollStateChanged(view: AbsListView?, state: Int) {
-                //TODO: add some logic if needed, but no logic needed for this task
             }
         })
 
         if(singleton!!.checkNetwork()) {
             gifModel!!.getGifsList()!!.observe(this,
-                Observer<List<Gif>?> { gifs ->
-                    adaptador!!.setData(gifs)
-                    adaptador!!.notifyDataSetChanged()
+                Observer{ gifsList ->
+                    adapter!!.setData(gifsList)
+                    adapter!!.notifyDataSetChanged()
 
-                    if(gifs!!.isEmpty()){
+                    if(gifsList!!.isEmpty()){
                         emptyGifContainerMain.visibility = View.VISIBLE
                     }else{
                         emptyGifContainerMain.visibility = View.GONE
@@ -106,7 +100,6 @@ class MainActivity : AppCompatActivity() {
             gifModel!!.reset()
             false
         }
-
         return true
     }
 

@@ -48,7 +48,6 @@ class GifLiveData(private var context: Context,private var mGifs:MutableList<Gif
             }
         )
         requestQueue.add(getRequest)
-
     }
 
     fun reset(){

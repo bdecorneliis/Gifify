@@ -7,4 +7,14 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="AppTheme.NoActionBar" parent="AppTheme">
+        <item name="windowNoTitle">true</item>
+        <item name="windowActionBar">true</item>
+    </style>
+
+    <style name="Animation_PopUp">
+        <item name="android:windowEnterAnimation">@anim/stb</item>
+        <item name="android:windowExitAnimation">@anim/stb</item>
+    </style>
+
 </resources>

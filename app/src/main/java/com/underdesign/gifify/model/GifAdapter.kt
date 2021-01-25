@@ -18,12 +18,10 @@ import android.widget.ImageView
 import android.widget.ProgressBar
 import androidx.annotation.Nullable
 import androidx.core.content.FileProvider
-import com.bumptech.glide.BuildConfig
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.engine.GlideException
-import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.bumptech.glide.load.resource.gif.GifDrawable
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.CustomTarget
@@ -32,6 +30,7 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.underdesign.gifify.BuildConfig
 import com.underdesign.gifify.R
 import com.underdesign.gifify.Singleton
 import java.io.File
@@ -77,10 +76,10 @@ class GifAdapter (private val context: Context?, private val isHomeScreen:Boolea
         val title = getItem(position).title
         val imagePath = getItem(position).URL
 
+
         Glide.with(imageView.context)
             .load(imagePath)
-            .thumbnail(0.1f)
-            .transition(DrawableTransitionOptions.withCrossFade())
+            .diskCacheStrategy(DiskCacheStrategy.ALL)
             .listener(object : RequestListener<Drawable?> {
 
                 override fun onLoadFailed(
@@ -145,6 +144,7 @@ class GifAdapter (private val context: Context?, private val isHomeScreen:Boolea
                     vibrator.vibrate(200)
                 }
 
+                //Inicio. Envia informacion a Firebase
                 db.collection("gifs").add(getItem(position))
 
                 val parameters = Bundle().apply {
@@ -154,6 +154,7 @@ class GifAdapter (private val context: Context?, private val isHomeScreen:Boolea
                 }
                 firebaseAnalytics = Firebase.analytics
                 firebaseAnalytics.setDefaultEventParameters(parameters)
+                //Fin. Envia informacion a Firebase
 
                 Glide.with(context)
                     .asGif()
@@ -180,7 +181,6 @@ class GifAdapter (private val context: Context?, private val isHomeScreen:Boolea
                         }
 
                         override fun onLoadCleared(placeholder: Drawable?) {
-
                         }
                     })
 
@@ -217,8 +217,6 @@ class GifAdapter (private val context: Context?, private val isHomeScreen:Boolea
                     val singleton = Singleton.getInstance(context, null)
                     singleton.updateFavoriteGifsList()
                     dialog.dismiss()
-
-
                 }
 
                 alert.setNegativeButton(
@@ -239,11 +237,11 @@ class GifAdapter (private val context: Context?, private val isHomeScreen:Boolea
     private fun saveImage(gifDrawable: GifDrawable?, fileName: String): Uri? {
         gifDrawable?.let {
 
-            val baseDir: String = context!!.getExternalFilesDir(null)!!.absolutePath
+            val baseDir: String =   context!!.getExternalFilesDir(null)!!.absolutePath
             val sharingGifFile = File(baseDir, fileName)
             gifDrawableToFile(gifDrawable, sharingGifFile)
 
-            return FileProvider.getUriForFile(
+            return  FileProvider.getUriForFile(
                 context, BuildConfig.APPLICATION_ID + ".provider",
                 sharingGifFile
             )
