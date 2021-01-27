@@ -1,4 +1,4 @@
-package com.underdesign.gifify.liveData
+package com.underdesign.gifify.LiveData
 
 import android.content.Context
 import androidx.lifecycle.MutableLiveData
@@ -6,8 +6,8 @@ import com.android.volley.Request
 import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
-import com.underdesign.gifify.model.Gif
-import com.underdesign.gifify.provider.Constant
+import com.underdesign.gifify.Model.Gif
+import com.underdesign.gifify.Provider.Constant
 import org.json.JSONException
 
 class GifLiveData(private var context: Context,private var mGifs:MutableList<Gif>,private var offset:Int): MutableLiveData<List<Gif>>() {
@@ -29,7 +29,7 @@ class GifLiveData(private var context: Context,private var mGifs:MutableList<Gif
                     try {
                         val obj = response.getJSONArray("data").getJSONObject(i)
 
-                        gif.id = obj.getString("id")
+                        gif.id_gif = obj.getString("id")
                         gif.title = obj.getString("title")
                         gif.URL = obj.getJSONObject("images").getJSONObject("downsized").getString("url")
 

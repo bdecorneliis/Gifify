@@ -7,8 +7,8 @@ import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import com.underdesign.gifify.model.Gif
-import com.underdesign.gifify.model.GifModel
+import com.underdesign.gifify.Model.GifModel
+import com.underdesign.gifify.Provider.Singleton
 
 
 class SplashActivity : AppCompatActivity() {

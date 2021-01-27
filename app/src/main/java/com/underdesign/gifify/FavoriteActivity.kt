@@ -7,8 +7,8 @@ import android.view.View
 import android.widget.GridView
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import com.underdesign.gifify.model.GifAdapter
-import com.underdesign.gifify.model.GifModel
+import com.underdesign.gifify.Model.GifAdapter
+import com.underdesign.gifify.Model.GifModel
 import kotlinx.android.synthetic.main.activity_favorite.*
 
 class FavoriteActivity : AppCompatActivity() {

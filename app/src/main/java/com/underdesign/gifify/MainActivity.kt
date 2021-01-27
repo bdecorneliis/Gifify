@@ -11,16 +11,16 @@ import android.widget.GridView
 import androidx.appcompat.widget.SearchView
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import com.underdesign.gifify.model.GifAdapter
-import com.underdesign.gifify.model.GifModel
+import com.underdesign.gifify.Model.GifAdapter
+import com.underdesign.gifify.Model.GifModel
+import com.underdesign.gifify.Provider.Singleton
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
     private var gifModel: GifModel? = null
     private var gridView: GridView? = null
     private var adapter: GifAdapter? = null
-    private var singleton:Singleton? = null
-
+    private var singleton: Singleton? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

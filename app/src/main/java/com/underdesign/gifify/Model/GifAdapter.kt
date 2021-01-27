@@ -1,4 +1,4 @@
-package com.underdesign.gifify.model
+package com.underdesign.gifify.Model
 
 import android.content.Context
 import android.content.Intent
@@ -8,6 +8,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.VibrationEffect
 import android.os.Vibrator
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,6 +23,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.bumptech.glide.load.resource.gif.GifDrawable
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.CustomTarget
@@ -32,7 +34,8 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.underdesign.gifify.BuildConfig
 import com.underdesign.gifify.R
-import com.underdesign.gifify.Singleton
+import com.underdesign.gifify.Provider.Singleton
+import org.jetbrains.anko.doAsync
 import java.io.File
 import java.io.FileOutputStream
 import java.nio.ByteBuffer
@@ -42,6 +45,7 @@ class GifAdapter (private val context: Context?, private val isHomeScreen:Boolea
     private var gifsList: List<Gif>? = ArrayList()
     private lateinit var firebaseAnalytics: FirebaseAnalytics
     private val db = Firebase.firestore
+    private var singleton : Singleton? = null
 
     fun setData(gifsList: List<Gif>?) {
         this.gifsList = gifsList
@@ -60,25 +64,36 @@ class GifAdapter (private val context: Context?, private val isHomeScreen:Boolea
     }
 
     override fun getView(position: Int, convertView: View?, viewGroup: ViewGroup?): View? {
+        singleton = Singleton.getInstance(context!!,null)
+
         var newRow: View? = convertView
         if (newRow == null) {
             val inflater =
-                context!!.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+                context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
             newRow = inflater.inflate(R.layout.grid_item, viewGroup, false)
         }
 
         val imageView = newRow!!.findViewById(R.id.imagen_gift) as ImageView
-        val brokeView = newRow.findViewById(R.id.broke) as ImageView
-        val loadingView = newRow.findViewById(R.id.loading) as ProgressBar
-        loadingView.visibility = View.VISIBLE
+        val brokeImage = newRow.findViewById(R.id.broke) as ImageView
+        val loadingImage = newRow.findViewById(R.id.loading) as ProgressBar
 
-        val id = getItem(position).id
+        loadingImage.visibility = View.VISIBLE
+
+        val id = getItem(position).id_gif
         val title = getItem(position).title
-        val imagePath = getItem(position).URL
 
+        val imagePath:String
+        if(isHomeScreen) {
+            imagePath = getItem(position).URL!!
+        }else{
+            imagePath = "${context.getExternalFilesDir(null)}/${getItem(position).URL}"
+
+        }
 
         Glide.with(imageView.context)
             .load(imagePath)
+            .thumbnail(0.1f)
+            .transition(DrawableTransitionOptions.withCrossFade())
             .diskCacheStrategy(DiskCacheStrategy.ALL)
             .listener(object : RequestListener<Drawable?> {
 
@@ -88,8 +103,8 @@ class GifAdapter (private val context: Context?, private val isHomeScreen:Boolea
                     isFirstResource: Boolean
                 ): Boolean {
 
-                    brokeView.visibility = View.VISIBLE
-                    loadingView.visibility = View.GONE
+                    brokeImage.visibility = View.VISIBLE
+                    loadingImage.visibility = View.GONE
 
                     return false
                 }
@@ -102,7 +117,7 @@ class GifAdapter (private val context: Context?, private val isHomeScreen:Boolea
                     isFirstResource: Boolean
                 ): Boolean {
 
-                    loadingView.visibility = View.GONE
+                    loadingImage.visibility = View.GONE
 
                     return false
                 }
@@ -110,7 +125,7 @@ class GifAdapter (private val context: Context?, private val isHomeScreen:Boolea
             .into(imageView)
 
         newRow.setOnClickListener {
-            Glide.with(context!!)
+            Glide.with(context)
                 .asGif().skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE)
                 .load(imagePath)
                 .into(object : CustomTarget<GifDrawable>(250, 250) {
@@ -130,66 +145,84 @@ class GifAdapter (private val context: Context?, private val isHomeScreen:Boolea
                 })
         }
 
+
+
         if (isHomeScreen) {
             newRow.setOnLongClickListener(View.OnLongClickListener {
-                val vibrator = context!!.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-                if (Build.VERSION.SDK_INT >= 26) {
-                    vibrator.vibrate(
-                        VibrationEffect.createOneShot(
-                            50,
-                            VibrationEffect.DEFAULT_AMPLITUDE
-                        )
-                    )
-                } else {
-                    vibrator.vibrate(200)
-                }
+                doAsync {
+                    val gifAllReadyExist = singleton!!.database.gifDao().getGifById(id!!)
+                    if(gifAllReadyExist == 0){
 
-                //Inicio. Envia informacion a Firebase
-                db.collection("gifs").add(getItem(position))
+                        val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                        if (Build.VERSION.SDK_INT >= 26) {
+                            vibrator.vibrate(
+                                VibrationEffect.createOneShot(
+                                    50,
+                                    VibrationEffect.DEFAULT_AMPLITUDE
+                                )
+                            )
+                        } else {
+                            vibrator.vibrate(200)
+                        }
 
-                val parameters = Bundle().apply {
-                    this.putString("id_gif", id)
-                    this.putString("title", title)
-                    this.putString("url", imagePath)
-                }
-                firebaseAnalytics = Firebase.analytics
-                firebaseAnalytics.setDefaultEventParameters(parameters)
-                //Fin. Envia informacion a Firebase
+                        //Inicio. Envia informacion a Firebase
+                        db.collection("gifs").add(getItem(position))
 
-                Glide.with(context)
-                    .asGif()
-                    .load(imagePath)
-                    .into(object : CustomTarget<GifDrawable>(250, 250) {
+                        val parameters = Bundle().apply {
+                            this.putString("id_gif", id)
+                            this.putString("title", title)
+                            this.putString("url", imagePath)
+                        }
+                        firebaseAnalytics = Firebase.analytics
+                        firebaseAnalytics.setDefaultEventParameters(parameters)
+                        //Fin. Envia informacion a Firebase
 
-                        override fun onResourceReady(
-                            resource: GifDrawable, transition: Transition<in GifDrawable>?
-                        ) {
-                            saveImage(resource, "${id}.gif")
-                            val stb = AnimationUtils.loadAnimation(context, R.anim.stb)
-                            val star = newRow.findViewById<ImageView>(R.id.gif_added_confirmation)
-                            star.visibility = View.VISIBLE
-                            star.startAnimation(stb)
+                        Glide.with(context)
+                            .asGif()
+                            .load(imagePath)
+                            .into(object : CustomTarget<GifDrawable>(250, 250) {
 
-                            stb.setAnimationListener(object : Animation.AnimationListener {
-                                override fun onAnimationStart(arg0: Animation?) {}
-                                override fun onAnimationRepeat(arg0: Animation?) {}
-                                override fun onAnimationEnd(arg0: Animation?) {
-                                    star.visibility = View.GONE
+                                override fun onResourceReady(
+                                    resource: GifDrawable, transition: Transition<in GifDrawable>?
+                                ) {
+
+                                    doAsync {
+                                        val gifToInsert = Gif()
+                                        gifToInsert.id_gif = id
+                                        gifToInsert.title = title
+                                        gifToInsert.URL = "${id}.gif"
+
+                                        singleton!!.database.gifDao().addGif(gifToInsert)
+                                    }
+
+                                    saveImage(resource, "${id}.gif")
+                                    val stb = AnimationUtils.loadAnimation(context, R.anim.stb)
+                                    val star = newRow.findViewById<ImageView>(R.id.gif_added_confirmation)
+                                    star.visibility = View.VISIBLE
+                                    star.startAnimation(stb)
+
+                                    stb.setAnimationListener(object : Animation.AnimationListener {
+                                        override fun onAnimationStart(arg0: Animation?) {}
+                                        override fun onAnimationRepeat(arg0: Animation?) {}
+                                        override fun onAnimationEnd(arg0: Animation?) {
+                                            star.visibility = View.GONE
+                                        }
+                                    })
+
+                                }
+
+                                override fun onLoadCleared(placeholder: Drawable?) {
                                 }
                             })
-
-                        }
-
-                        override fun onLoadCleared(placeholder: Drawable?) {
-                        }
-                    })
+                    }
+                }
 
                 return@OnLongClickListener true
             })
         } else {
 
             newRow.setOnLongClickListener(View.OnLongClickListener {
-                val vibrator = context!!.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
                 if (Build.VERSION.SDK_INT >= 26) {
                     vibrator.vibrate(
                         VibrationEffect.createOneShot(
@@ -208,10 +241,16 @@ class GifAdapter (private val context: Context?, private val isHomeScreen:Boolea
                 alert.setPositiveButton(
                     context.getText(R.string.yes)
                 ) { dialog, _ ->
-                    val myFile = File(imagePath!!)
+                    val myFile = File(imagePath)
                     if (myFile.exists()) {
                         myFile.delete()
+
                     }
+
+                    doAsync {
+                        singleton!!.database.gifDao().deleteGif(getItem(position))
+                    }
+
                     dialog.dismiss()
 
                     val singleton = Singleton.getInstance(context, null)

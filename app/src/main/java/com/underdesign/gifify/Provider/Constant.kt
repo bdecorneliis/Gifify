@@ -1,4 +1,4 @@
-package com.underdesign.gifify.provider
+package com.underdesign.gifify.Provider
 
 
 class Constant {

@@ -1,28 +1,32 @@
-package com.underdesign.gifify
+package com.underdesign.gifify.Provider
 
 import android.annotation.SuppressLint
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.view.View
-import com.underdesign.gifify.liveData.FavoriteLiveData
-import com.underdesign.gifify.liveData.GifLiveData
-import com.underdesign.gifify.model.Gif
+import androidx.room.Room
+import com.underdesign.gifify.DataBase.GifDatabase
+import com.underdesign.gifify.LiveData.FavoriteLiveData
+import com.underdesign.gifify.LiveData.GifLiveData
+import com.underdesign.gifify.Model.Gif
 
 class Singleton private constructor(context: Context, view: View?) {
 
     var GifLiveData: GifLiveData? = null
     var FavoriteLiveData: FavoriteLiveData? = null
     private val mGifs: MutableList<Gif> = ArrayList()
+    var database: GifDatabase
 
     var offset = 0
     var limit = 30
 
     init{
-        Singleton.context = context
-        Singleton.view = view
+        Companion.context = context
+        Companion.view = view
+        database =  Room.databaseBuilder(context, GifDatabase::class.java, "gifify-db").build()
         GifLiveData = GifLiveData(context,mGifs,0)
-        FavoriteLiveData = FavoriteLiveData(context)
+        FavoriteLiveData = FavoriteLiveData(context,database)
     }
 
     fun addPage(offset:Int){
@@ -30,7 +34,7 @@ class Singleton private constructor(context: Context, view: View?) {
     }
 
     fun updateFavoriteGifsList(){
-        FavoriteLiveData!!.favoriteGifs()
+        FavoriteLiveData!!.getFavoriteGifs()
     }
 
     fun checkNetwork() =
@@ -51,11 +55,13 @@ class Singleton private constructor(context: Context, view: View?) {
         @SuppressLint("StaticFieldLeak")
         private var view: View? = null
 
+
         @Synchronized
-        fun getInstance(context: Context, view: View?): Singleton{
+        fun getInstance(context: Context, view: View?): Singleton {
 
             if (singleton == null) {
-                singleton = Singleton(context,view)
+                singleton =
+                    Singleton(context, view)
             }
             return singleton!!
         }
