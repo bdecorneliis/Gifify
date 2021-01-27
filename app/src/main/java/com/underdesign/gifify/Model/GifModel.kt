@@ -25,7 +25,6 @@ class GifModel(application: Application) : AndroidViewModel(application) {
         singleton!!.addPage(singleton!!.limit * ++singleton!!.offset)
     }
 
-
     fun searchText(value:String){
         gifsList!!.searchText(value)
     }
@@ -33,7 +32,6 @@ class GifModel(application: Application) : AndroidViewModel(application) {
     fun reset(){
         gifsList!!.reset()
     }
-
 
     init {
         singleton = Singleton.getInstance(application,null)

@@ -15,4 +15,5 @@
     <string name="failed_connection">Failed Connection</string>
     <string name="empty_favorite">No gifs saved</string>
     <string name="empty_search">No gifs found</string>
+    <string name="favoriteExist">You already have this gif</string>
 </resources>

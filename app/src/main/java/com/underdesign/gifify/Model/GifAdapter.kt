@@ -28,6 +28,7 @@ import com.bumptech.glide.load.resource.gif.GifDrawable
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
+import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.firestore.ktx.firestore
@@ -82,11 +83,10 @@ class GifAdapter (private val context: Context?, private val isHomeScreen:Boolea
         val id = getItem(position).id_gif
         val title = getItem(position).title
 
-        val imagePath:String
-        if(isHomeScreen) {
-            imagePath = getItem(position).URL!!
+        val imagePath:String = if(isHomeScreen) {
+            getItem(position).url
         }else{
-            imagePath = "${context.getExternalFilesDir(null)}/${getItem(position).URL}"
+            "${context.getExternalFilesDir(null)}/${getItem(position).url}"
 
         }
 
@@ -150,7 +150,7 @@ class GifAdapter (private val context: Context?, private val isHomeScreen:Boolea
         if (isHomeScreen) {
             newRow.setOnLongClickListener(View.OnLongClickListener {
                 doAsync {
-                    val gifAllReadyExist = singleton!!.database.gifDao().getGifById(id!!)
+                    val gifAllReadyExist = singleton!!.database.gifDao().getGifById(id)
                     if(gifAllReadyExist == 0){
 
                         val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
@@ -187,11 +187,12 @@ class GifAdapter (private val context: Context?, private val isHomeScreen:Boolea
                                 ) {
 
                                     doAsync {
-                                        val gifToInsert = Gif()
-                                        gifToInsert.id_gif = id
-                                        gifToInsert.title = title
-                                        gifToInsert.URL = "${id}.gif"
-
+                                        val gifToInsert = Gif(
+                                            null,
+                                                id,
+                                                title,
+                                            "${id}.gif"
+                                        )
                                         singleton!!.database.gifDao().addGif(gifToInsert)
                                     }
 
@@ -214,6 +215,8 @@ class GifAdapter (private val context: Context?, private val isHomeScreen:Boolea
                                 override fun onLoadCleared(placeholder: Drawable?) {
                                 }
                             })
+                    }else{
+                        Snackbar.make(viewGroup!!, context.getText(R.string.favoriteExist), Snackbar.LENGTH_SHORT).show()
                     }
                 }
 

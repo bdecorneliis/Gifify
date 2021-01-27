@@ -25,14 +25,14 @@ class GifLiveData(private var context: Context,private var mGifs:MutableList<Gif
             Request.Method.GET,url,null,
             Response.Listener { response ->
                 for (i in 0 until response!!.getJSONArray("data").length()) {
-                    val gif = Gif()
                     try {
                         val obj = response.getJSONArray("data").getJSONObject(i)
-
-                        gif.id_gif = obj.getString("id")
-                        gif.title = obj.getString("title")
-                        gif.URL = obj.getJSONObject("images").getJSONObject("downsized").getString("url")
-
+                        val gif = Gif(
+                        null,
+                            obj.getString("id"),
+                            obj.getString("title"),
+                            obj.getJSONObject("images").getJSONObject("downsized").getString("url")
+                        )
 
                         mGifs.add(gif)
 
